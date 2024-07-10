@@ -1,0 +1,78 @@
+﻿@model IEnumerable<Exam4.Models.Exams>
+
+<form asp-action="Index" id="examForm" method="post">
+    @foreach (var exam in Model)
+    {
+        @if (exam != null)
+        {
+            <div class="exam-section">
+                <h2>@exam.ExamTitle</h2>
+                <div class="questions-section">
+                    @if (exam.Questions != null)
+                    {
+                        @foreach (var question in exam.Questions)
+                        {
+                            @if (question != null)
+                            {
+                                <div class="question">
+                                    <h4>@question.Text</h4>
+                                    <ul>
+                                        @if (question.Options != null)
+                                        {
+                                            @foreach (var option in question.Options)
+                                            {
+                                                @if (option != null)
+                                                {
+                                                    <div>
+                                                        <input type="radio" name="@("question_" + question.Id)" value="@option.Id" />
+                                                        <label>@option.Text</label>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        }
+    }
+    <button type="submit">Submit</button>
+</form>
+
+<div>
+    <p>You answered <span id="correctAnswersCount">0</span> correct answers.</p>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#examForm').on('submit', function (event) {
+                event.preventDefault();
+
+                var formData = $(this).serialize();
+
+                $.ajax({
+                    url: '@Url.Action("SubmitAnswers")',
+                    type: 'POST',
+                    data: formData,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#correctAnswersCount').text(response.correctAnswersCount);
+                            alert('Answers submitted successfully!');
+                        } else {
+                            alert('Error calculating score.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error response
+                        alert('Error submitting answers.');
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+}
